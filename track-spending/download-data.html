@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+  </head>
+<body onload="downloadCurrentSavedData()">
+  <div id="showJson"></div>
+
+<script src="js/localForage-1.5.5/dist/localforage.min.js"></script>
+<script>
+// Everything below this line gets executed onload
+window.indexedDB = window.indexedDB ||
+                    window.mozIndexedDB ||
+                    window.webkitIndexedDB ||
+                    window.msIndexedDB;
+if (window.indexedDB) {
+  console.log("IndexedDB is supported.");
+} else {
+  console.log("IndexedDB is not supported.");
+}
+
+// Set up localforage to use IndexedDB
+localforage.config({
+  driver      : localforage.INDEXEDDB, // Force INDEXEDDB; same as using setDriver()
+  name        : 'myApp',
+  version     : 1.0,
+  size        : 4980736, // Size of database, in bytes. WebSQL-only for now.
+  storeName   : 'spending', // Should be alphanumeric, with underscores.
+  description : 'track spending'
+});
+
+function downloadCurrentSavedData() {
+
+  let entries = [];
+
+  localforage.iterate(function(value, key, iterationNumber) {
+    // Resulting key/value pair -- this callback
+    // will be executed for every item in the
+    // database.
+    //console.log([key, JSON.stringify(value)], iterationNumber);
+    //add it to the array  
+    entries.push(value);
+  }).then(function() {
+    console.log('Iteration has completed');
+    let strEntries = JSON.stringify(entries);
+    console.log(`downloading as json = ${strEntries}`);
+
+    let a = document.createElement("a");
+    let file = new Blob([strEntries], {type: "application/json"});
+    a.href = URL.createObjectURL(file);
+    a.click();
+
+    //document.getElementById("showJson").innerHTML = strEntries;
+  }).catch(function(err) {
+    // This code runs if there were any errors
+    console.log(err);
+  });   
+}    
+</script>
+</body>
+</html>
